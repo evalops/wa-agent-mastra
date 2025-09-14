@@ -3,16 +3,20 @@ import request from 'supertest';
 import express from 'express';
 import twilio from 'twilio';
 
-// Mock the agent runner
+// Mock twilio at module level
+jest.mock('twilio');
+
+// Mock the agent runner with proper Jest 30.x syntax
+const mockRunOnce = jest.fn<(config: any, message: string, session: string) => Promise<string>>();
 jest.mock('../../packages/agent-mastra/src/run', () => ({
-  runOnce: jest.fn().mockResolvedValue('Test response from agent')
+  runOnce: mockRunOnce
 }));
 
 // Mock the persistence layer
 jest.mock('../../packages/persistence-sqlite/src/index', () => ({
-  init: jest.fn(),
-  setSessionProvider: jest.fn(),
-  getSessionProvider: jest.fn().mockReturnValue({
+  init: jest.fn<(dbPath: string) => void>(),
+  setSessionProvider: jest.fn<(session: string, provider: string, modelId: string | null) => void>(),
+  getSessionProvider: jest.fn<(session: string) => { provider: string; model_id: string }>().mockReturnValue({
     provider: 'openai',
     model_id: 'gpt-4'
   })
@@ -29,14 +33,21 @@ describe('WhatsApp Webhook Integration', () => {
     process.env.TWILIO_WHATSAPP_FROM = 'whatsapp:+14155238886';
     process.env.NODE_ENV = 'test';
 
-    // Mock Twilio client
+    // Set up mockRunOnce
+    mockRunOnce.mockResolvedValue('Test response from agent');
+
+    // Mock Twilio client with proper Jest 30.x syntax
+    const mockCreate = jest.fn<(params: any) => Promise<{ sid: string }>>();
+    mockCreate.mockResolvedValue({ sid: 'SMtest123' });
+
     mockTwilioClient = {
       messages: {
-        create: jest.fn().mockResolvedValue({ sid: 'SMtest123' })
+        create: mockCreate
       }
     };
 
-    jest.spyOn(twilio, 'default').mockReturnValue(mockTwilioClient as any);
+    // Mock the twilio constructor
+    (twilio as jest.MockedFunction<typeof twilio>).mockReturnValue(mockTwilioClient);
 
     // Create Express app with minimal setup
     app = express();

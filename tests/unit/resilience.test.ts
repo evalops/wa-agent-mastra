@@ -2,15 +2,14 @@ import { describe, it, expect, jest, beforeEach, afterEach } from '@jest/globals
 import { ResilientFunction, makeResilient, ErrorWithRetry } from '../../packages/resilience/src/index';
 
 describe('Resilience Package', () => {
-  let mockFunction: jest.Mock;
+  let mockFunction: jest.MockedFunction<(...args: any[]) => Promise<any>>;
 
   beforeEach(() => {
     mockFunction = jest.fn();
-    jest.useFakeTimers();
   });
 
   afterEach(() => {
-    jest.useRealTimers();
+    jest.clearAllMocks();
   });
 
   describe('ResilientFunction', () => {

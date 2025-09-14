@@ -61,14 +61,7 @@ export function createSlowDown(config?: SlowDownConfig): RequestHandler {
     delayAfter: config?.delayAfter || 50, // Allow 50 requests per windowMs without slowing
     delayMs: config?.delayMs || 500, // Add 500ms delay per request after delayAfter
     maxDelayMs: config?.maxDelayMs || 20000, // Maximum delay of 20 seconds
-    skipSuccessfulRequests: config?.skipSuccessfulRequests ?? false,
-    onLimitReached: (req: Request) => {
-      log.warn({
-        ip: req.ip,
-        path: req.path,
-        method: req.method
-      }, 'Slow down limit reached');
-    }
+    skipSuccessfulRequests: config?.skipSuccessfulRequests ?? false
   });
 }
 

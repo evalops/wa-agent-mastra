@@ -19,5 +19,5 @@ export async function runOnce(conf: AgentRunnerConfig, text: string, sessionId: 
     toolsets: mcp ? await mcp.getToolsets() : undefined,
   });
   await mcp?.disconnect();
-  return resp.outputText();
+  return resp.text;
 }

@@ -1,5 +1,5 @@
 /** @type {import('jest').Config} */
-export default {
+const config = {
   preset: 'ts-jest/presets/default-esm',
   testEnvironment: 'node',
   extensionsToTreatAsEsm: ['.ts'],
@@ -17,12 +17,18 @@ export default {
       {
         useESM: true,
         tsconfig: {
+          module: 'esnext',
+          target: 'es2020',
           esModuleInterop: true,
           allowSyntheticDefaultImports: true,
-        },
-      },
-    ],
+          moduleResolution: 'node'
+        }
+      }
+    ]
   },
+  transformIgnorePatterns: [
+    'node_modules/(?!(p-retry|opossum|pino|@mastra|retry|delay)/)'
+  ],
   testMatch: [
     '**/tests/**/*.test.ts',
     '**/tests/**/*.spec.ts'
@@ -46,3 +52,5 @@ export default {
   testTimeout: 10000,
   verbose: true
 };
+
+export default config;

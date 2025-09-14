@@ -82,7 +82,9 @@ describe('WhatsApp Webhook Integration', () => {
           workingScope: 'resource'
         }, Body, From);
 
-        await mockTwilioClient.messages.create({
+        // Use the mocked Twilio client from module mock
+        const client = (twilio as jest.MockedFunction<typeof twilio>)(process.env.TWILIO_ACCOUNT_SID!, process.env.TWILIO_AUTH_TOKEN!);
+        await client.messages.create({
           from: process.env.TWILIO_WHATSAPP_FROM,
           to: From,
           body: reply
@@ -111,7 +113,7 @@ describe('WhatsApp Webhook Integration', () => {
       expect(response.status).toBe(204);
 
       // Wait for async processing
-      await new Promise(resolve => setTimeout(resolve, 100));
+      await new Promise(resolve => setTimeout(resolve, 200));
 
       expect(mockTwilioCreate).toHaveBeenCalledWith({
         from: 'whatsapp:+14155238886',

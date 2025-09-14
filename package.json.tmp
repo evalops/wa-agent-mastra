@@ -1,0 +1,21 @@
+{
+  "name": "wa-agent-mastra",
+  "private": true,
+  "version": "1.0.0",
+  "description": "WhatsApp agent with Mastra memory (Postgres + pgvector), MCP tools, OpenAI/Anthropic routing.",
+  "packageManager": "pnpm@9.7.0",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r --filter ./packages/* run build && pnpm -r --filter ./apps/* run build",
+    "dev": "pnpm -r --parallel --stream --filter ./packages/* run dev & pnpm -r --stream --filter ./apps/* run dev",
+    "typecheck": "pnpm -r run typecheck",
+    "test": "jest",
+    "test:watch": "jest --watch",
+    "test:coverage": "jest --coverage",
+    "test:unit": "jest tests/unit",
+    "test:integration": "jest tests/integration"
+  }
+}

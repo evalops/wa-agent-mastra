@@ -4,7 +4,19 @@
       "Bash(git init:*)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(gh repo create:*)"
+      "Bash(gh repo create:*)",
+      "Bash(git push:*)",
+      "Bash(pnpm install:*)",
+      "Bash(npm install)",
+      "Bash(npm install:*)",
+      "Bash(jest:*)",
+      "Bash(pnpm view:*)",
+      "WebFetch(domain:mastra.ai)",
+      "Bash(sed:*)",
+      "Bash(pnpm run:*)",
+      "Bash(pnpm add:*)",
+      "WebSearch",
+      "Bash(pnpm test:*)"
     ],
     "deny": [],
     "ask": []

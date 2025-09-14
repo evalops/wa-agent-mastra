@@ -3,8 +3,17 @@ import request from 'supertest';
 import express from 'express';
 import twilio from 'twilio';
 
+// Create mock function that we can access in tests
+const mockTwilioCreate = jest.fn<(params: any) => Promise<{ sid: string }>>();
+
 // Mock twilio at module level
-jest.mock('twilio');
+jest.mock('twilio', () => {
+  return jest.fn<(sid: string, token: string) => any>().mockImplementation(() => ({
+    messages: {
+      create: mockTwilioCreate
+    }
+  }));
+});
 
 // Mock the agent runner with proper Jest 30.x syntax
 const mockRunOnce = jest.fn<(config: any, message: string, session: string) => Promise<string>>();
@@ -33,21 +42,12 @@ describe('WhatsApp Webhook Integration', () => {
     process.env.TWILIO_WHATSAPP_FROM = 'whatsapp:+14155238886';
     process.env.NODE_ENV = 'test';
 
-    // Set up mockRunOnce
+    // Set up mocks
     mockRunOnce.mockResolvedValue('Test response from agent');
+    mockTwilioCreate.mockResolvedValue({ sid: 'SMtest123' });
 
-    // Mock Twilio client with proper Jest 30.x syntax
-    const mockCreate = jest.fn<(params: any) => Promise<{ sid: string }>>();
-    mockCreate.mockResolvedValue({ sid: 'SMtest123' });
-
-    mockTwilioClient = {
-      messages: {
-        create: mockCreate
-      }
-    };
-
-    // Mock the twilio constructor
-    (twilio as jest.MockedFunction<typeof twilio>).mockReturnValue(mockTwilioClient);
+    // Get the mocked Twilio client from the mock
+    mockTwilioClient = (twilio as jest.MockedFunction<typeof twilio>)('ACtest123', 'testtoken123');
 
     // Create Express app with minimal setup
     app = express();
@@ -113,7 +113,7 @@ describe('WhatsApp Webhook Integration', () => {
       // Wait for async processing
       await new Promise(resolve => setTimeout(resolve, 100));
 
-      expect(mockTwilioClient.messages.create).toHaveBeenCalledWith({
+      expect(mockTwilioCreate).toHaveBeenCalledWith({
         from: 'whatsapp:+14155238886',
         to: 'whatsapp:+1234567890',
         body: 'Test response from agent'
@@ -156,7 +156,7 @@ describe('WhatsApp Webhook Integration', () => {
         .expect(204);
 
       expect(response.status).toBe(204);
-      expect(mockTwilioClient.messages.create).not.toHaveBeenCalled();
+      expect(mockTwilioCreate).not.toHaveBeenCalled();
     });
 
     it('should handle missing Body field', async () => {
@@ -169,7 +169,7 @@ describe('WhatsApp Webhook Integration', () => {
         .expect(204);
 
       expect(response.status).toBe(204);
-      expect(mockTwilioClient.messages.create).not.toHaveBeenCalled();
+      expect(mockTwilioCreate).not.toHaveBeenCalled();
     });
   });
 });

@@ -1,0 +1,1 @@
+export const tryEnv=(n:string,f?:string)=>process.env[n]??f; export function env(n:string,f?:string){const v=process.env[n]??f; if(v===undefined) throw new Error(`Missing env var: ${n}`); return v;} export const truncate=(s:string,m=1600)=>s.length<=m?s:s.slice(0,m-3)+'...';

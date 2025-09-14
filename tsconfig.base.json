@@ -1,0 +1,27 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ES2022",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "types": [
+      "node"
+    ],
+    "baseUrl": ".",
+    "paths": {
+      "@agent/*": [
+        "packages/agent-mastra/src/*"
+      ],
+      "@shared/*": [
+        "packages/shared/src/*"
+      ],
+      "@persistence/*": [
+        "packages/persistence-sqlite/src/*"
+      ]
+    }
+  }
+}

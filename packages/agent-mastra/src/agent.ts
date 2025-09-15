@@ -3,6 +3,16 @@ import { Memory } from '@mastra/memory';
 import { PostgresStore, PgVector } from '@mastra/pg';
 import { MCPClient } from '@mastra/mcp';
 import { modelFrom } from './model';
+import fs from 'node:fs';
+
+function loadExecutionPrompt(): string {
+  const p = process.env.SYSTEM_PROMPT_FILE || 'packages/agent-mastra/prompts/execution-system.md';
+  try { return fs.readFileSync(p, 'utf8'); } catch { /* fallback */ }
+  return [
+    'You are the Execution Engine of Wire.',
+    'Return JSON as specified in Output Format.',
+  ].join(' ');
+}
 
 type BuildOptions = {
   provider: string;
@@ -46,12 +56,7 @@ export async function buildAgent(opts: BuildOptions) {
   const agent = new Agent({
     name: 'WhatsApp Agent',
     description: 'Concise WhatsApp assistant with persistent memory (Postgres) and MCP tools.',
-    instructions: [
-      'You are a concise WhatsApp assistant.',
-      'Prefer short answers.',
-      'Update working memory when the user shares stable facts.',
-      'Use tools sparingly; summarize for SMS-length replies.',
-    ].join(' '),
+    instructions: loadExecutionPrompt(),
     model: modelFrom(opts.provider, opts.modelId || undefined),
     memory,
     tools: mcp ? await mcp.getTools() : undefined,

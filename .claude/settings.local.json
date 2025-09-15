@@ -16,7 +16,12 @@
       "Bash(pnpm run:*)",
       "Bash(pnpm add:*)",
       "WebSearch",
-      "Bash(pnpm test:*)"
+      "Bash(pnpm test:*)",
+      "Bash(gh repo edit:*)",
+      "WebFetch(domain:poke.com)",
+      "Bash(pnpm --filter @wa-agent/execution-agent install)",
+      "Bash(pnpm --filter @wa-agent/execution-agent run build)",
+      "Bash(pnpm -w run test)"
     ],
     "deny": [],
     "ask": []

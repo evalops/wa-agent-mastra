@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import pino from 'pino';
 import twilio from 'twilio';
-import { runOnce } from '@agent/runner';
+import { runConversation } from '@wa-agent/conversational-agent';
 import { init as initSessions, setSessionProvider, getSessionProvider } from '@persistence/sqlite';
 
 const log = pino({ name: 'whatsapp-gateway' });
@@ -20,6 +20,13 @@ const authToken = process.env.TWILIO_AUTH_TOKEN!;
 const fromWhatsApp = process.env.TWILIO_WHATSAPP_FROM!;
 if (!accountSid || !authToken || !fromWhatsApp) throw new Error('Missing Twilio env vars');
 const client = twilio(accountSid, authToken);
+
+function extractEngineJson(s: string): any | null {
+  // look for last fenced JSON block
+  const match = [...s.matchAll(/```(?:json)?\s*([^]*?)\s*```/g)].pop();
+  if (!match) return null;
+  try { return JSON.parse(match[1]); } catch { return null; }
+}
 
 function readRunnerConfig(forSession: string) {
   const pref = getSessionProvider(forSession);
@@ -75,8 +82,24 @@ app.post('/twilio/whatsapp/inbound', twilioWebhookMw, async (req, res) => {
   res.status(204).end(); // ACK
 
   try {
-    const reply = await runOnce(readRunnerConfig(from), text, from);
-    await client.messages.create({ from: fromWhatsApp, to: from, body: reply });
+    const reply = await runConversation(readRunnerConfig(from), text, from);
+
+    const engine = extractEngineJson(reply);
+    let toUser = null;
+    if (engine?.notify_user) {
+      toUser = engine.notify_user;
+    } else {
+      // fallback: trim reply if no structured output found
+      toUser = reply.length > 1600 ? reply.slice(0, 1597) + '...' : reply;
+    }
+
+    // WhatsApp template guard (Presenter can enforce policy)
+    if (engine?.whatsapp?.template_required === true) {
+      // Optional: route to a template sender or notify ops
+      toUser = engine.whatsapp.template_suggestion || 'Reply to continue and I'll pick this up.';
+    }
+
+    await client.messages.create({ from: fromWhatsApp, to: from, body: toUser });
   } catch (err) {
     log.error({ err }, 'Agent error');
     try { await client.messages.create({ from: fromWhatsApp, to: from, body: 'Sorry — something went wrong.' }); } catch {}
